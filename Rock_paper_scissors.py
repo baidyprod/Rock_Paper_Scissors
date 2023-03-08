@@ -2,7 +2,8 @@ import random
 from tkinter import *
 from random import choice
 from time import time
-import csv
+from os import path
+import locale
 
 
 class Game:
@@ -36,7 +37,7 @@ class Game:
     timer_stop = None
     time = None
     time_label = None
-    colors = ('red', 'blue', 'green', 'lightblue', 'orange', 'pink', 'purple')
+    colors = ('red', 'blue', 'green', 'orange', 'purple')
 
     def early_game(self):
         self.welcome_label = Label(text='Welcome!', font='Helvetica 24 bold italic', bg='light green', fg='dark green')
@@ -47,7 +48,7 @@ class Game:
         self.checkbutton_timer = Checkbutton(text='Timer', variable=self.checkbutton_var, onvalue=1, offvalue=0)
         self.log_writer_checkbutton = Checkbutton(text='Write logs', variable=self.log_writer_var, onvalue=1,
                                                   offvalue=0)
-        self.welcome_label.place(relx=0.5, rely=0.3, anchor=CENTER)
+        self.welcome_label.place(relx=0.5, rely=0.25, anchor=CENTER)
         self.checkbutton_timer.place(relx=0.5, rely=0.4, anchor=CENTER)
         self.log_writer_checkbutton.place(relx=0.5, rely=0.5, anchor=CENTER)
         self.start_game_button.place(relx=0.5, rely=0.6, anchor=CENTER)
@@ -150,30 +151,20 @@ class Game:
         self.mid_game()
 
     def log_writer(self):
-        with open('game_res.csv', 'r') as filename:
-            file = csv.DictReader(filename)
-            rounds = []
-            try:
-                for col in file:
-                    rounds.append(col['Round'])
-                round_count = int(rounds[-1]) + 1
-                write_header = False
-            except:
-                round_count = 1
-                write_header = True
-        with open('game_res.csv', 'a') as file:
-            header = ['Round', 'Player', 'AI', 'Result', 'Time']
+        if not path.exists("game.res"):
+            with open('game.res', 'w') as file:
+                file.write('Round\tPlayer\tAI\tResult\tTime\n')
+        with open('game.res', 'r') as file:
+            game_count = len(file.readlines())
+        with open('game.res', 'a') as file:
             if self.time:
-                data = [round_count, self.player_figure, self.ai_figure, self.winner, self.time]
+                file.write(f'{game_count}\t{self.player_figure}\t{self.ai_figure}\t{self.winner}\t{locale.str(self.time)}\n')
             else:
-                data = [round_count, self.player_figure, self.ai_figure, self.winner, '']
-            writer = csv.writer(file)
-            if write_header:
-                writer.writerow(header)
-            writer.writerow(data)
+                file.write(f'{game_count}\t{self.player_figure}\t{self.ai_figure}\t{self.winner}\t''\n')
 
 
 def main():
+    locale.setlocale(locale.LC_ALL, '')
     root = Tk()
     game = Game()
     root.title('Rock-Paper-Scissors')
